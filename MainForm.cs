@@ -97,6 +97,11 @@ namespace KindleBookSummaryCreator
 
             var outputPath = txtOutputFolder.Text;
 
+            if (!Directory.Exists(outputPath))
+            {
+                Directory.CreateDirectory(outputPath);
+            }
+
             foreach (var summary in summaries)
             {
                 File.WriteAllText(Path.Combine(outputPath, Sanitize(summary.Key) + ".txt"), summary.Value);
