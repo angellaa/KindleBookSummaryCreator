@@ -66,48 +66,55 @@ namespace KindleBookSummaryCreator
 
         private void btnStart_Click(object sender, EventArgs e)
         {
-            var streamReader = File.OpenText(txtKindleFolder.Text);
-
-            var summaries = new Dictionary<string, string>();
- 
-            while (!streamReader.EndOfStream)
+            try
             {
-                var bookTitle = streamReader.ReadLine();
-                var type = streamReader.ReadLine();
+                var streamReader = File.OpenText(txtKindleFolder.Text);
 
-                if (type.Contains("Highlight"))
+                var summaries = new Dictionary<string, string>();
+
+                while (!streamReader.EndOfStream)
                 {
-                    if (!summaries.ContainsKey(bookTitle))
-                        summaries[bookTitle] = "";
+                    var bookTitle = streamReader.ReadLine();
+                    var type = streamReader.ReadLine();
+
+                    if (type.Contains("Highlight"))
+                    {
+                        if (!summaries.ContainsKey(bookTitle))
+                            summaries[bookTitle] = "";
+                    }
+
+                    var line = streamReader.ReadLine();
+                    var text = "";
+                    while (line != "==========")
+                    {
+                        text += line;
+                        line = streamReader.ReadLine();
+                    }
+
+                    if (type.Contains("Highlight"))
+                    {
+                        summaries[bookTitle] += text + "\n";
+                    }
                 }
 
-                var line = streamReader.ReadLine();
-                var text = "";
-                while (line != "==========")
+                var outputPath = txtOutputFolder.Text;
+
+                if (!Directory.Exists(outputPath))
                 {
-                    text += line;
-                    line = streamReader.ReadLine();
+                    Directory.CreateDirectory(outputPath);
                 }
 
-                if (type.Contains("Highlight"))
+                foreach (var summary in summaries)
                 {
-                    summaries[bookTitle] += text + "\n";
+                    File.WriteAllText(Path.Combine(outputPath, Sanitize(summary.Key) + ".txt"), summary.Value);
                 }
+
+                Process.Start(outputPath);
             }
-
-            var outputPath = txtOutputFolder.Text;
-
-            if (!Directory.Exists(outputPath))
+            catch (Exception ex)
             {
-                Directory.CreateDirectory(outputPath);
+                MessageBox.Show("An error has occured. Try again.\n\n" + ex.Message, "Kindle Book Summary Creator", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-            foreach (var summary in summaries)
-            {
-                File.WriteAllText(Path.Combine(outputPath, Sanitize(summary.Key) + ".txt"), summary.Value);
-            }
-
-            Process.Start(outputPath);
         }
 
         private static string Sanitize(string name)
