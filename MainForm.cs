@@ -10,6 +10,8 @@ namespace KindleBookSummaryCreator
 {
     public partial class MainForm : Form
     {
+        const int MaxFilePathLength = 260;
+
         public MainForm()
         {
             InitializeComponent();
@@ -106,7 +108,13 @@ namespace KindleBookSummaryCreator
 
                 foreach (var summary in summaries)
                 {
-                    File.WriteAllText(Path.Combine(outputPath, Sanitize(summary.Key) + ".txt"), summary.Value);
+                    var extension = ".txt";
+                    var maxLenght = MaxFilePathLength - extension.Length;
+
+                    var filePath = Path.Combine(outputPath, Sanitize(summary.Key) + extension);
+                    filePath = filePath.Substring(0, Math.Min(filePath.Length, maxLenght));
+                    
+                    File.WriteAllText(filePath, summary.Value);
                 }
 
                 Process.Start(outputPath);
